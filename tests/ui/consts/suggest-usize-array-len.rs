@@ -1,0 +1,27 @@
+//! Regression test for <https://github.com/rust-lang/rust/issues/159487>.
+//! When suggesting `const` for a non-constant value used in an array length
+//! or repeat count, the type annotation should be `usize` (not `/* Type */`),
+//! since array lengths always have type `usize`.
+//@ run-rustfix
+
+#![allow(unused, non_upper_case_globals)]
+#![crate_type = "lib"]
+
+fn check_simple() {
+    let length = 3;
+    let values: [i32; length] = [0; length];
+    //~^ ERROR attempt to use a non-constant value in a constant [E0435]
+    //~| ERROR attempt to use a non-constant value in a constant [E0435]
+    println!("{}", values.len());
+}
+
+fn check_nested() {
+    let n = 2;
+    let m = 3;
+    let arr: [[i32; m]; n] = [[0; m]; n];
+    //~^ ERROR attempt to use a non-constant value in a constant [E0435]
+    //~| ERROR attempt to use a non-constant value in a constant [E0435]
+    //~| ERROR attempt to use a non-constant value in a constant [E0435]
+    //~| ERROR attempt to use a non-constant value in a constant [E0435]
+    println!("{} {}", arr.len(), arr[0].len());
+}

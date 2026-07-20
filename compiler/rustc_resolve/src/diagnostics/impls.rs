@@ -1175,6 +1175,7 @@ impl<'ra, 'tcx> Resolver<'ra, 'tcx> {
                 suggestion,
                 current,
                 type_span,
+                type_suggestion,
             } => {
                 // let foo =...
                 //     ^^^ given this Span
@@ -1216,6 +1217,7 @@ impl<'ra, 'tcx> Resolver<'ra, 'tcx> {
                                     suggestion,
                                     current,
                                     type_span,
+                                    type_suggestion,
                                 }),
                                 Some(diagnostics::AttemptToUseNonConstantValueInConstantLabelWithSuggestion { span }),
                                 None,

@@ -804,6 +804,10 @@ pub(crate) struct DiagMetadata<'ast> {
     /// When processing impl trait
     currently_processing_impl_trait: Option<(TraitRef, Ty)>,
 
+    /// Whether we are currently resolving an array length or repeat count,
+    /// used to suggest `usize` as the type for `const` bindings.
+    pub(crate) current_array_len: bool,
+
     /// Accumulate the errors due to missed lifetime elision,
     /// and report them all at once for each function.
     current_elision_failures: Vec<(MissingLifetime, Either<NodeId, Range<NodeId>>)>,
@@ -1038,7 +1042,9 @@ impl<'ast, 'ra, 'tcx> Visitor<'ast> for LateResolutionVisitor<'_, 'ast, 'ra, 'tc
             }
             TyKind::Array(element_ty, length) => {
                 self.visit_ty(element_ty);
+                let prev = replace(&mut self.diag_metadata.current_array_len, true);
                 self.resolve_anon_const(length, AnonConstKind::ConstArg(IsRepeatExpr::No));
+                self.diag_metadata.current_array_len = prev;
             }
             _ => visit::walk_ty(self, ty),
         }
@@ -5360,7 +5366,9 @@ impl<'a, 'ast, 'ra, 'tcx> LateResolutionVisitor<'a, 'ast, 'ra, 'tcx> {
             }
             ExprKind::Repeat(ref elem, ref ct) => {
                 self.visit_expr(elem);
+                let prev = replace(&mut self.diag_metadata.current_array_len, true);
                 self.resolve_anon_const(ct, AnonConstKind::ConstArg(IsRepeatExpr::Yes));
+                self.diag_metadata.current_array_len = prev;
             }
             ExprKind::ConstBlock(ref ct) => {
                 self.resolve_anon_const(ct, AnonConstKind::InlineConst);

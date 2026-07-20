@@ -1531,6 +1531,14 @@ impl<'ra, 'tcx> Resolver<'ra, 'tcx> {
                                             }
                                             Some(_) => None,
                                         };
+                                        let type_suggestion = if let Some(diag_metadata) =
+                                            diag_metadata
+                                            && diag_metadata.current_array_len
+                                        {
+                                            "usize"
+                                        } else {
+                                            "/* Type */"
+                                        };
                                         (
                                             rib_ident.span,
                                             AttemptToUseNonConstantValueInConstant {
@@ -1538,6 +1546,7 @@ impl<'ra, 'tcx> Resolver<'ra, 'tcx> {
                                                 suggestion: "const",
                                                 current: "let",
                                                 type_span,
+                                                type_suggestion,
                                             },
                                         )
                                     }
@@ -1548,6 +1557,7 @@ impl<'ra, 'tcx> Resolver<'ra, 'tcx> {
                                             suggestion: "let",
                                             current: kind.as_str(),
                                             type_span: None,
+                                            type_suggestion: "/* Type */",
                                         },
                                     ),
                                 };
